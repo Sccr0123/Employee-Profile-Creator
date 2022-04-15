@@ -1,6 +1,5 @@
-var inquirer = require("inquirer");
-
-var employees = [];
+const inquirer = require("inquirer");
+const fs = require("fs");
 
 //Import Roles
 const Employee = require("./lib/Employee");
@@ -13,72 +12,128 @@ const employeeQuestions = require("./lib/Questions/EmployeeQuestions");
 const engineerQuestions = require("./lib/Questions/EngineerQuestions");
 const internQuestions = require("./lib/Questions/InternQuestions");
 const managerQuestions = require("./lib/Questions/ManagerQuestions");
-const actionQuestions = require("./lib/Questions/ActionQuestions")
+const actionQuestions = require("./lib/Questions/ActionQuestions");
+
+
+const generateHTML = require("./lib/generateHTML");
+
+var employees = [];
+
+function addManager() {
+    inquirer.prompt(managerQuestions).then((answers) => {
+        const newManager = new Manager(
+            answers.manager.name,
+            answers.manager.id,
+            answers.manager.email,
+            answers.manager.officeNumber
+        );
+
+        employees.push(newManager);
+
+        addAnother();
+    });
+};
 
 function addEngineer() {
-    inquirer.prompt(engineerQuestions).then((answers) => {
-        console.log(answers);
-        console.log("Added Engineer");
+	inquirer.prompt(engineerQuestions).then((answers) => {
+        const newEngineer = new Engineer(
+			answers.engineer.name,
+			answers.engineer.id,
+			answers.engineer.email,
+			answers.engineer.github
+		);
+		employees.push(newEngineer);
+        
+        addAnother();
     });
-    
-};
 
-function addIntern() {
-    inquirer.prompt(internQuestions).then((answers) => {
-        console.log(answers);
-        console.log("Added Intern");
-    });
-    
-};
 
-function addEmployee() {
-    inquirer.prompt(employeeQuestions).then((answers) => {
-        console.log(answers);
-        console.log("Added Employee");
-    });
-    
 }
 
-async function init() {
-    await inquirer.prompt(managerQuestions).then((answers) => {
-        const newEmployee = new Manager(
-			answers.manager.name,
-			answers.manager.id,
-			answers.manager.email,
-			answers.manager.officeNumber
+function addIntern() {
+	inquirer.prompt(internQuestions).then((answers) => {
+		const newIntern = new Intern(
+			answers.intern.name,
+			answers.intern.id,
+			answers.intern.email,
+			answers.intern.school
 		);
-        employees.push(newEmployee); 
+		employees.push(newIntern);
+
+		addAnother();
+	});
+}
+
+function addEmployee() {
+	inquirer.prompt(employeeQuestions).then((answers) => {
+		const newEmployee = new Employee(
+			answers.employee.name,
+			answers.employee.id,
+			answers.employee.email,
+		);
+		employees.push(newEmployee);
+
+		addAnother();
+	});
+}
+
+function addAnother() {
+    inquirer.prompt(actionQuestions).then((answers) => {
+        switch (answers.role) {
+            case "Engineer":
+                addEngineer();
+                break;
+
+            case "Intern":
+                addIntern();
+                break;
+
+            case "Employee":
+                addEmployee();
+                break;
+
+            default:
+                if (answers.next === "Finish") {
+
+                    print();
+                } else {
+                    console.log("Error");
+                    break;
+                }
+        };
     });
 
-    var completed = false;
-
-    while (completed != true) {
-        await inquirer.prompt(actionQuestions).then((answers) => {
-            if (answers.next === "Finish") {
-                completed = true;
-            };
-
-            switch (answers.role) {
-				case "Engineer":
-					addEngineer();
-					break;
-
-				case "Intern":
-                    addIntern();
-					break;
-                
-                case "Employee":
-                    addEmployee();
-                    break;
-                
-                default:
-                    break;
-			};
-        });
-    };
-
-    console.log(employees);
 };
 
+function print() {
+
+    var content = generateHTML(employees);
+
+    console.log(content);
+
+    try {
+        fs.writeFileSync("test.html", content);
+        console.log("HTML Generated!!!");
+	} catch (err) {
+		console.error(err);
+	}
+        
+	
+        
+    process.exit(1);
+}
+
+function init() {
+    addManager();
+};
 //Run Function On Startup
-init()
+
+init();
+
+
+
+
+
+
+
+
