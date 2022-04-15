@@ -110,7 +110,7 @@ function print() {
     var content = generateHTML(employees);
 
     try {
-        fs.writeFileSync("test.html", content);
+        fs.writeFileSync("index.html", content);
         console.log("HTML Generated!!!");
 	} catch (err) {
 		console.error(err);
