@@ -109,8 +109,6 @@ function print() {
 
     var content = generateHTML(employees);
 
-    console.log(content);
-
     try {
         fs.writeFileSync("test.html", content);
         console.log("HTML Generated!!!");
